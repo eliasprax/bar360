@@ -1,0 +1,821 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Painel do dono · Bar 360 Graus</title>
+<style>
+  :root{color-scheme:dark;--fundo:#0d0a08;--card:#1a1410;--borda:#3a2d22;--texto:#f3e9dc;--suave:#a89885;--ouro:#d9a441;--ok:#6fbf73;--erro:#e5675b}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fundo);color:var(--texto);font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+  a{color:var(--ouro)}
+  h1{font-size:22px;margin:0}
+  button,input{font:inherit}
+  input[type=text],input[type=password]{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--borda);background:#120d0a;color:var(--texto)}
+  input:focus-visible,button:focus-visible{outline:2px solid var(--ouro);outline-offset:2px}
+  button{cursor:pointer;border:1px solid var(--borda);background:var(--card);color:var(--texto);padding:9px 14px;border-radius:8px}
+  button.principal{background:var(--ouro);color:#1a1008;border-color:var(--ouro);font-weight:600}
+  button:disabled{opacity:.5;cursor:default}
+  .login{max-width:360px;margin:12vh auto;padding:24px;background:var(--card);border:1px solid var(--borda);border-radius:14px}
+  .login h1{margin-bottom:6px}
+  .login p{color:var(--suave);margin:0 0 16px}
+  .login label{display:block;margin-bottom:6px;color:var(--suave);font-size:14px}
+  .login button{width:100%;margin-top:12px}
+  .msg{min-height:1.3em;margin-top:10px;font-size:14px}
+  .msg.erro{color:var(--erro)} .msg.ok{color:var(--ok)}
+  header.topo{position:sticky;top:0;z-index:5;background:rgba(13,10,8,.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--borda)}
+  .topo-in{max-width:900px;margin:0 auto;padding:12px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .topo-in .esp{flex:1}
+  main{max-width:900px;margin:0 auto;padding:16px}
+  .busca{margin-bottom:14px}
+  h2{font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:var(--ouro);margin:26px 0 8px}
+  .item{display:grid;grid-template-columns:64px 1fr 110px auto;gap:8px;align-items:center;padding:10px;background:var(--card);border:1px solid var(--borda);border-radius:10px;margin-bottom:8px}
+  .item.oculto{opacity:.6}
+  .item .acoes{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+  .item .oc{display:flex;gap:6px;align-items:center;font-size:14px;color:var(--suave);white-space:nowrap}
+  .item .estado{grid-column:1/-1;font-size:13px;min-height:1em;color:var(--suave)}
+  .item .estado:empty{display:none}
+  .item .estado.ok{color:var(--ok)} .item .estado.erro{color:var(--erro)}
+  details{margin-top:28px;background:var(--card);border:1px solid var(--borda);border-radius:10px;padding:10px 14px}
+  details input{margin:6px 0}
+  .assist{background:var(--card);border:1px solid var(--borda);border-radius:14px;padding:14px;margin:0 0 18px}
+  .assist-topo{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+  .assist-topo small{color:var(--suave)}
+  #chat{max-height:300px;overflow:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+  #chat:empty{display:none}
+  .bolha{padding:9px 12px;border-radius:12px;max-width:92%;white-space:pre-line;font-size:15px}
+  .bolha.eu{align-self:flex-end;background:#2b2118;border:1px solid var(--borda)}
+  .bolha.bot{align-self:flex-start;background:#120d0a;border:1px solid var(--borda)}
+  .bolha.bot.ok{border-color:var(--ok)} .bolha.bot.ruim{border-color:var(--erro)}
+  .bolha ul{margin:6px 0 4px;padding-left:18px} .bolha li{margin:2px 0}
+  .bolha .av{color:var(--ouro);font-size:14px;margin-top:4px}
+  .bolha .bts{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .bolha .bts button{padding:7px 12px}
+  .assist form{display:flex;gap:8px}
+  .assist form input{flex:1;min-width:0}
+  #mic{width:46px;padding:0;display:grid;place-items:center}
+  #mic[aria-pressed=true]{background:var(--erro);border-color:var(--erro);color:#fff;animation:pulsa 1.1s infinite}
+  @keyframes pulsa{50%{box-shadow:0 0 0 6px rgba(229,103,91,.25)}}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .chips button{font-size:13px;padding:5px 10px;color:var(--suave);border-radius:999px}
+  .falar{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--suave);margin-top:8px}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px;border-bottom:1px solid var(--borda);padding-bottom:10px}
+  .tabs button{border-radius:999px;padding:8px 16px}
+  .tabs button[aria-selected=true]{background:var(--ouro);color:#1a1008;border-color:var(--ouro);font-weight:600}
+  .dica{color:var(--suave);margin:0 0 12px;font-size:15px}
+  .card{background:var(--card);border:1px solid var(--borda);border-radius:12px;padding:14px;margin-bottom:14px}
+  .card h3{margin:0 0 10px;font-size:16px}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .form-grid .larga{grid-column:1/-1}
+  select{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--borda);background:#120d0a;color:var(--texto);font:inherit}
+  textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--borda);background:#120d0a;color:var(--texto);font:inherit;resize:vertical}
+  .linha-texto{padding:10px;background:var(--card);border:1px solid var(--borda);border-radius:10px;margin-bottom:8px}
+  .linha-texto .acoes{display:flex;gap:6px;margin-top:6px;align-items:center;flex-wrap:wrap}
+  .linha-texto .estado{font-size:13px;color:var(--suave)} .linha-texto .estado.ok{color:var(--ok)} .linha-texto .estado.erro{color:var(--erro)}
+  .cores{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+  .cor{display:flex;align-items:center;gap:10px;font-size:14px}
+  .cor input[type=color]{width:46px;height:36px;padding:0;border:1px solid var(--borda);border-radius:8px;background:none;cursor:pointer}
+  .fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+  .foto{background:#120d0a;border:1px solid var(--borda);border-radius:10px;padding:8px;font-size:13px;color:var(--suave)}
+  .foto img{width:100%;height:110px;object-fit:contain;background:#000;border-radius:6px;display:block;margin-bottom:6px}
+  .foto .acoes{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+  .foto button,.foto label.botao{padding:6px 10px;font-size:13px;border:1px solid var(--borda);border-radius:8px;background:var(--card);color:var(--texto);cursor:pointer}
+  .secoes-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px}
+  .secoes-lista label{display:flex;gap:8px;align-items:center;font-size:15px}
+  .previa-barra{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+  #previa{width:100%;height:560px;border:1px solid var(--borda);border-radius:10px;background:#000;display:block;margin:0 auto}
+  #previa.celular{width:390px;max-width:100%}
+  .rodape-acoes{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+  @media(max-width:640px){.form-grid{grid-template-columns:1fr}}
+  .foto-linha{grid-column:1/-1;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .thumb{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid var(--ouro);background:#000;flex:none}
+  .botao{padding:7px 12px;font-size:14px;border:1px solid var(--borda);border-radius:8px;background:var(--card);color:var(--texto);cursor:pointer;display:inline-block}
+  .botao:hover{border-color:var(--ouro)}
+  [hidden]{display:none!important}
+  .foto-slot{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;width:64px;font-size:11px;line-height:1.2;color:var(--suave);text-align:center}
+  .foto-slot .thumb{width:56px;height:56px}
+  .foto-vazio{width:56px;height:56px;border-radius:50%;border:2px dashed var(--ouro);display:grid;place-items:center;color:var(--ouro);background:#120d0a}
+  .foto-slot:hover .foto-vazio,.foto-slot:hover .thumb{filter:brightness(1.3)}
+  .foto-slot:focus-within{outline:2px solid var(--ouro);outline-offset:2px;border-radius:10px}
+  @media(max-width:640px){.item{grid-template-columns:64px 1fr 100px}.item .acoes{grid-column:1/-1;justify-content:flex-start}}
+</style>
+</head>
+<body>
+
+<section class="login" id="tela-login" hidden>
+  <h1>Painel do dono</h1>
+  <p>Bar 360 Graus · cardápio</p>
+  <form id="form-login">
+    <label for="senha">Senha</label>
+    <input type="password" id="senha" autocomplete="current-password" required>
+    <button class="principal" type="submit">Entrar</button>
+    <div class="msg" id="msg-login" role="alert"></div>
+  </form>
+  <p style="margin-top:14px"><a href="/">← Ver o cardápio</a></p>
+</section>
+
+<div id="tela-painel" hidden>
+  <header class="topo"><div class="topo-in">
+    <h1>Painel do dono</h1><span class="esp"></span>
+    <a href="/" target="_blank" rel="noopener">Ver cardápio</a>
+    <button id="sair" type="button">Sair</button>
+  </div></header>
+  <main>
+    <section class="assist" aria-label="Assistente">
+      <div class="assist-topo"><b>Assistente</b><small>fale ou escreva o que quer mudar. Eu mostro o que entendi e só aplico quando você confirmar.</small></div>
+      <div id="chat" role="log" aria-live="polite"></div>
+      <form id="form-assist" autocomplete="off">
+        <button type="button" id="mic" aria-label="Falar um comando" aria-pressed="false" title="Falar um comando">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+        </button>
+        <input type="text" id="cmd" maxlength="300" placeholder="Ex.: muda a sopa de carne para 20 reais" aria-label="Comando para o assistente">
+        <button class="principal" type="submit">Enviar</button>
+      </form>
+      <div class="chips" id="chips"></div>
+      <label class="falar"><input type="checkbox" id="falar"> Responder em voz alta</label>
+    </section>
+    <div class="tabs" role="tablist" aria-label="Áreas do painel">
+      <button type="button" role="tab" id="tab-itens" aria-selected="true" data-aba="itens">Itens e preços</button>
+      <button type="button" role="tab" id="tab-textos" aria-selected="false" data-aba="textos">Textos</button>
+      <button type="button" role="tab" id="tab-eventos" aria-selected="false" data-aba="eventos">Eventos</button>
+      <button type="button" role="tab" id="tab-wifi" aria-selected="false" data-aba="wifi">Wi-Fi</button>
+      <button type="button" role="tab" id="tab-aparencia" aria-selected="false" data-aba="aparencia">Aparência e fotos</button>
+    </div>
+
+    <section id="aba-itens" role="tabpanel" aria-labelledby="tab-itens">
+      <p class="dica">Mude o nome e o preço de cada item e toque em <b>Salvar</b>. A alteração aparece no cardápio na hora. <b>Esconder</b> tira o item do ar sem apagar; <b>Restaurar</b> volta ao original.</p>
+      <details class="card" id="card-novo">
+        <summary><b>Adicionar um item novo</b></summary>
+        <form id="form-novo" class="form-grid" autocomplete="off" style="margin-top:10px">
+          <label>Categoria<select id="novo-secao" required></select></label>
+          <label>Em qual lista<select id="novo-lista" required></select></label>
+          <label class="larga">Nome<input type="text" id="novo-nome" maxlength="80" required placeholder="Ex.: Caldo de siri"></label>
+          <label id="novo-preco-w">Preço<input type="text" id="novo-preco" inputmode="decimal" placeholder="Ex.: 24,90"></label>
+          <label id="novo-desc-w">Descrição (opcional)<input type="text" id="novo-desc" maxlength="160" placeholder="Ex.: Servido com torradas"></label>
+          <label class="larga" id="novo-foto-w">Foto do produto (opcional)<input type="file" id="novo-foto" accept="image/jpeg,image/png,image/webp"></label>
+          <div class="larga"><button class="principal" type="submit">Adicionar ao cardápio</button><div class="msg" id="msg-novo" role="alert"></div></div>
+        </form>
+      </details>
+      <input class="busca" type="text" id="filtro" placeholder="Buscar item..." aria-label="Buscar item">
+      <div id="chips-novos"></div>
+      <div id="lista"></div>
+    </section>
+
+    <section id="aba-textos" role="tabpanel" aria-labelledby="tab-textos" hidden>
+      <p class="dica">Aqui dá pra mudar qualquer texto do cardápio: título, frases, descrições, eventos, endereço, rodapé. Escreva o novo texto e toque em <b>Salvar</b>. Nomes e preços dos itens ficam na aba "Itens e preços".</p>
+      <input class="busca" type="text" id="filtro-textos" placeholder="Buscar texto..." aria-label="Buscar texto">
+      <div id="lista-textos"></div>
+    </section>
+
+    <section id="aba-eventos" role="tabpanel" aria-labelledby="tab-eventos" hidden>
+      <p class="dica">Aqui o dono monta a seção <b>Eventos</b>: o texto de abertura, cada noite ou show (Sexta, Sábado, um evento especial) com atração, horário, local, entrada e o que mais quiser, e o botão do Instagram. Toque em <b>Salvar eventos</b> pra publicar.</p>
+      <div class="card"><h3>Abertura da seção</h3><textarea id="ev-intro" rows="3" maxlength="400" aria-label="Texto de abertura dos eventos"></textarea></div>
+      <div id="ev-cards"></div>
+      <div class="rodape-acoes" style="margin:0 0 14px"><button type="button" id="ev-add">+ Adicionar evento</button></div>
+      <div class="card"><h3>Botão e aviso</h3>
+        <div class="form-grid">
+          <label>Texto do botão<input type="text" id="ev-botao-texto" maxlength="80"></label>
+          <label>Link do botão (Instagram, ingressos…)<input type="text" id="ev-botao-link" maxlength="300" inputmode="url" placeholder="https://..."></label>
+          <label class="larga">Aviso no fim da seção<textarea id="ev-aviso" rows="2" maxlength="400"></textarea></label>
+        </div>
+      </div>
+      <div class="rodape-acoes" style="margin:0 0 16px">
+        <button type="button" class="principal" id="ev-salvar">Salvar eventos</button>
+        <button type="button" id="ev-padrao">Voltar ao original</button>
+        <span class="msg" id="msg-ev" role="alert"></span>
+      </div>
+      <div class="card"><h3>Prévia</h3><iframe id="previa-ev" title="Prévia da seção de eventos" src="about:blank" style="width:100%;height:620px;border:1px solid var(--borda);border-radius:10px;background:#000;display:block"></iframe></div>
+    </section>
+
+    <section id="aba-wifi" role="tabpanel" aria-labelledby="tab-wifi" hidden>
+      <p class="dica">Mostre no cardápio o Wi-Fi do bar pros clientes. Aparece numa seção "Wi-Fi do bar" com o nome da rede e a senha, mais um botão pra copiar. Se trocar a senha do roteador, é só atualizar aqui.</p>
+      <div class="card">
+        <label class="oc" style="display:flex;gap:8px;align-items:center;margin-bottom:6px;font-size:16px"><input type="checkbox" id="wifi-ativo"> Mostrar o Wi-Fi no cardápio</label>
+        <p id="wifi-estado" class="msg" style="margin:0 0 12px;font-size:14px"></p>
+        <div class="form-grid">
+          <label>Nome da rede<input type="text" id="wifi-rede" maxlength="40" autocomplete="off" placeholder="Ex.: Bar360_Clientes"></label>
+          <label>Senha do Wi-Fi<input type="text" id="wifi-senha" maxlength="63" autocomplete="off" spellcheck="false" placeholder="A senha que o cliente vai digitar"></label>
+          <label class="larga">Mensagem (opcional)<input type="text" id="wifi-msg" maxlength="120" placeholder="Ex.: Cortesia da casa. É só conectar."></label>
+        </div>
+        <p class="dica" style="margin:10px 0 0">Atenção: tudo que está no cardápio pode ser visto por qualquer pessoa que abrir o link, mesmo longe do bar. Se isso incomodar, use uma rede de visitantes separada da rede do bar.</p>
+      </div>
+      <div class="rodape-acoes" style="margin:0 0 16px">
+        <button type="button" class="principal" id="wifi-salvar">Salvar Wi-Fi</button>
+        <button type="button" id="wifi-padrao">Tirar o Wi-Fi do cardápio</button>
+        <span class="msg" id="msg-wifi" role="alert"></span>
+      </div>
+      <div class="card"><h3>Prévia</h3><iframe id="previa-wifi" title="Prévia do Wi-Fi no cardápio" src="about:blank" style="width:100%;height:420px;border:1px solid var(--borda);border-radius:10px;background:#000;display:block"></iframe></div>
+    </section>
+
+    <section id="aba-aparencia" role="tabpanel" aria-labelledby="tab-aparencia" hidden>
+      <p class="dica">Mude as cores, as fontes, o tamanho do texto, as seções que aparecem e as fotos. Toque em <b>Salvar aparência</b> e veja o resultado na prévia logo abaixo.</p>
+      <div class="card"><h3>Cores</h3><div class="cores" id="ap-cores"></div></div>
+      <div class="card"><h3>Letras</h3>
+        <div class="form-grid">
+          <label>Fonte dos títulos<select id="ap-fonte-titulo"></select></label>
+          <label>Fonte do texto<select id="ap-fonte-texto"></select></label>
+          <label class="larga">Tamanho do texto: <b id="ap-tamanho-v">100%</b><input type="range" id="ap-tamanho" min="85" max="125" step="5"></label>
+        </div>
+      </div>
+      <div class="card"><h3>Seções do cardápio</h3><p class="dica" style="margin-bottom:8px">Desmarque pra tirar a seção inteira do ar (ela some do menu também).</p><div class="secoes-lista" id="ap-secoes"></div></div>
+      <div class="rodape-acoes" style="margin:0 0 16px">
+        <button type="button" class="principal" id="ap-salvar">Salvar aparência</button>
+        <button type="button" id="ap-padrao">Voltar cores e letras ao padrão</button>
+        <span class="msg" id="msg-ap" role="alert"></span>
+      </div>
+      <div class="card"><h3>Fotos</h3><p class="dica" style="margin-bottom:8px">Troque qualquer foto do cardápio (JPG, PNG ou WebP, até 5 MB).</p><div class="fotos" id="ap-fotos"></div></div>
+      <div class="card"><h3>Prévia</h3>
+        <div class="previa-barra">
+          <button type="button" id="previa-desktop">Computador</button>
+          <button type="button" id="previa-celular">Celular</button>
+          <button type="button" id="previa-recarregar">Atualizar prévia</button>
+        </div>
+        <iframe id="previa" title="Prévia do cardápio" src="about:blank"></iframe>
+      </div>
+    </section>
+    <details>
+      <summary>Trocar a senha</summary>
+      <form id="form-senha">
+        <input type="password" id="senha-atual" placeholder="Senha atual" autocomplete="current-password" required>
+        <input type="password" id="senha-nova" placeholder="Nova senha (mínimo 8 caracteres)" autocomplete="new-password" minlength="8" required>
+        <button type="submit">Trocar senha</button>
+        <div class="msg" id="msg-senha" role="alert"></div>
+      </form>
+    </details>
+  </main>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+async function api(metodo, url, corpo) {
+  const r = await fetch(url, { method: metodo, headers: { 'Content-Type': 'application/json', 'X-Painel': '1' }, body: corpo ? JSON.stringify(corpo) : undefined, credentials: 'same-origin' });
+  const d = await r.json().catch(() => ({}));
+  if (r.status === 401 && url !== '/api/login' && url !== '/api/senha') { mostrar(false); }
+  if (!r.ok) throw new Error(d.erro || 'Algo deu errado.');
+  return d;
+}
+function mostrar(logado) { $('tela-login').hidden = logado; $('tela-painel').hidden = !logado; if (logado) carregar(); else $('senha').focus(); }
+
+$('form-login').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const m = $('msg-login'); m.className = 'msg'; m.textContent = '';
+  try { await api('POST', '/api/login', { senha: $('senha').value }); $('senha').value = ''; mostrar(true); }
+  catch (err) { m.className = 'msg erro'; m.textContent = err.message; }
+});
+$('sair').addEventListener('click', async () => { try { await api('POST', '/api/logout'); } catch {} mostrar(false); });
+
+// reduz a foto no próprio navegador antes de enviar (celular tira foto de 4 MB; no cardápio ela aparece pequena)
+async function prepararFoto(arquivo, max = 720) {
+  try {
+    const bmp = await createImageBitmap(arquivo);
+    const esc = Math.min(1, max / Math.max(bmp.width, bmp.height));
+    const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(bmp.width * esc)); c.height = Math.max(1, Math.round(bmp.height * esc));
+    const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(bmp, 0, 0, c.width, c.height);
+    const blob = await new Promise((ok) => c.toBlob(ok, 'image/jpeg', 0.85));
+    return blob && blob.size < arquivo.size ? blob : arquivo;
+  } catch { return arquivo; }
+}
+async function enviarFotoItem(id, arquivo) {
+  if (arquivo.size > 25 * 1024 * 1024) throw new Error('Essa foto é grande demais.');
+  const corpo = await prepararFoto(arquivo);
+  if (corpo.size > 5 * 1024 * 1024) throw new Error('A foto passa de 5 MB.');
+  const r = await fetch('/api/itens/' + encodeURIComponent(id) + '/foto', { method: 'POST', headers: { 'X-Painel': '1' }, body: corpo, credentials: 'same-origin' });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.erro || 'Não consegui enviar a foto.');
+  return j.foto;
+}
+
+let itens = [];
+async function carregarItens() {
+  try { itens = (await api('GET', '/api/itens')).itens; desenhar(); } catch (e) { $('lista').textContent = e.message; }
+  try { desenharChipsNovos((await api('GET', '/api/novos-chips')).chips); } catch { /* sem sabores novos */ }
+}
+function desenharChipsNovos(chips) {
+  const box = $('chips-novos'); box.replaceChildren();
+  if (!chips.length) return;
+  const card = document.createElement('div'); card.className = 'card';
+  const h = document.createElement('h3'); h.textContent = 'Sabores de espetinho que você adicionou'; card.append(h);
+  for (const c of chips) {
+    const l = document.createElement('div'); l.className = 'item'; l.style.gridTemplateColumns = '1fr auto';
+    const n = document.createElement('div'); n.textContent = c.nome;
+    const b = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Remover' });
+    b.addEventListener('click', async () => { try { await api('DELETE', '/api/novos/' + c.uid); carregou.textos = false; await carregarItens(); } catch (e) { n.textContent = e.message; } });
+    l.append(n, b); card.append(l);
+  }
+  box.append(card);
+}
+let abaAtual = 'itens';
+const carregou = { itens: false, textos: false, eventos: false, wifi: false, aparencia: false };
+function carregar() {   // atualiza a aba aberta; as outras recarregam quando forem abertas
+  carregou.itens = carregou.textos = carregou.eventos = carregou.wifi = carregou.aparencia = false;
+  return abrirAba(abaAtual);
+}
+async function abrirAba(nome) {
+  abaAtual = nome;
+  for (const b of document.querySelectorAll('.tabs button')) b.setAttribute('aria-selected', String(b.dataset.aba === nome));
+  for (const a of ['itens', 'textos', 'eventos', 'wifi', 'aparencia']) $('aba-' + a).hidden = a !== nome;
+  if (carregou[nome]) return;
+  carregou[nome] = true;
+  if (nome === 'itens') { await carregarItens(); carregarEstrutura(); }
+  else if (nome === 'textos') await carregarTextos();
+  else if (nome === 'eventos') await carregarEventos();
+  else if (nome === 'wifi') await carregarWifi();
+  else await carregarAparencia();
+}
+for (const b of document.querySelectorAll('.tabs button')) b.addEventListener('click', () => abrirAba(b.dataset.aba));
+function desenhar() {
+  const q = $('filtro').value.trim().toLowerCase();
+  const lista = $('lista'); lista.replaceChildren();
+  let ultima = null;
+  for (const it of itens) {
+    const aj = it.ajuste || {};
+    const nome = aj.nome || it.nome;
+    if (q && !nome.toLowerCase().includes(q) && !it.titulo.toLowerCase().includes(q)) continue;
+    if (it.secao !== ultima) { const h = document.createElement('h2'); h.textContent = it.titulo; lista.append(h); ultima = it.secao; }
+    lista.append(linha(it));
+  }
+  if (!lista.children.length) lista.textContent = 'Nenhum item encontrado.';
+}
+function linha(it) {
+  const aj = it.ajuste || {};
+  const d = document.createElement('div'); d.className = 'item' + (aj.oculto ? ' oculto' : '');
+  const nome = Object.assign(document.createElement('input'), { type: 'text', value: aj.nome || it.nome, maxLength: 80 }); nome.setAttribute('aria-label', 'Nome');
+  const preco = Object.assign(document.createElement('input'), { type: 'text', value: aj.preco || it.preco, inputMode: 'decimal' }); preco.setAttribute('aria-label', 'Preço em reais');
+  const ac = document.createElement('div'); ac.className = 'acoes';
+  const lab = document.createElement('label'); lab.className = 'oc';
+  const ck = Object.assign(document.createElement('input'), { type: 'checkbox', checked: !!aj.oculto });
+  lab.append(ck, 'Esconder');
+  const salvar = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Salvar', className: 'principal' });
+  const rest = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Restaurar' });
+  rest.hidden = !it.ajuste;
+  const est = document.createElement('div'); est.className = 'estado';
+  est.textContent = it.ajuste ? `Original: ${it.nome} · R$ ${it.preco}` : '';
+  ac.append(lab, salvar, rest);
+  if (it.novo) {
+    const rem = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Remover do cardápio' });
+    rem.addEventListener('click', async () => {
+      if (!confirm('Apagar "' + (it.ajuste?.nome || it.nome) + '" do cardápio? Dá pra desfazer pelo assistente ("desfaz").')) return;
+      try { await api('DELETE', '/api/novos/' + it.novo); carregou.itens = false; carregou.textos = false; await carregarItens(); } catch (e) { aviso(e.message, 'erro'); }
+    });
+    ac.append(rem);
+    est.textContent = 'Item criado por você.';
+  }
+  // espaço da foto: é a 1ª coisa da linha. Clicar nele escolhe a foto do produto.
+  const slot = document.createElement('label'); slot.className = 'foto-slot'; slot.title = 'Clique pra adicionar ou trocar a foto deste produto';
+  const th = document.createElement('img'); th.className = 'thumb'; th.alt = '';
+  const vazio = document.createElement('span'); vazio.className = 'foto-vazio';
+  vazio.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>';
+  const legenda = document.createElement('span');
+  const arq = Object.assign(document.createElement('input'), { type: 'file', accept: 'image/jpeg,image/png,image/webp' }); arq.hidden = true;
+  slot.append(th, vazio, legenda, arq);
+  const tirar = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Tirar foto' });
+  ac.append(tirar);
+  const pintarFoto = () => {
+    const nova = it.ajuste && it.ajuste.foto;
+    const src = nova ? '/' + nova : (it.fotoOriginal ? '/' + it.fotoOriginal : '');
+    th.hidden = !src; vazio.hidden = !!src; if (src) th.src = src;
+    legenda.textContent = src ? 'Trocar foto' : 'Adicionar foto';
+    tirar.hidden = !nova;
+  };
+  d.append(slot, nome, preco, ac, est);
+  const aviso = (t, c) => { est.className = 'estado ' + (c || ''); est.textContent = t; };
+  pintarFoto();
+  arq.addEventListener('change', async () => {
+    const f = arq.files[0]; if (!f) return;
+    aviso('Enviando a foto…');
+    try {
+      const foto = await enviarFotoItem(it.id, f);
+      it.ajuste = { ...(it.ajuste || {}), foto }; rest.hidden = false; pintarFoto(); aviso('Foto salva. Já aparece no cardápio.', 'ok');
+    } catch (e) { aviso(e.message, 'erro'); }
+    arq.value = '';
+  });
+  tirar.addEventListener('click', async () => {
+    try {
+      await api('DELETE', '/api/itens/' + encodeURIComponent(it.id) + '/foto');
+      if (it.ajuste) { delete it.ajuste.foto; if (!Object.keys(it.ajuste).length) it.ajuste = undefined; }
+      rest.hidden = !it.ajuste; pintarFoto(); aviso('Foto retirada.', 'ok');
+    } catch (e) { aviso(e.message, 'erro'); }
+  });
+
+  salvar.addEventListener('click', async () => {
+    salvar.disabled = true;
+    try {
+      const r = await api('PUT', '/api/itens/' + encodeURIComponent(it.id), { nome: nome.value, preco: preco.value, oculto: ck.checked });
+      it.ajuste = r.ajuste || undefined;
+      const aj2 = it.ajuste || {};
+      nome.value = aj2.nome || it.nome; preco.value = aj2.preco || it.preco; ck.checked = !!aj2.oculto;
+      d.classList.toggle('oculto', !!aj2.oculto); rest.hidden = !it.ajuste; pintarFoto();
+      aviso(it.ajuste ? `Salvo. Original: ${it.nome} · R$ ${it.preco}` : 'Salvo (igual ao original).', 'ok');
+    } catch (e) { aviso(e.message, 'erro'); }
+    salvar.disabled = false;
+  });
+  rest.addEventListener('click', async () => {
+    try {
+      await api('DELETE', '/api/itens/' + encodeURIComponent(it.id));
+      delete it.ajuste; nome.value = it.nome; preco.value = it.preco; ck.checked = false;
+      d.classList.remove('oculto'); rest.hidden = true; pintarFoto(); aviso('Voltou ao original.', 'ok');
+    } catch (e) { aviso(e.message, 'erro'); }
+  });
+  return d;
+}
+$('filtro').addEventListener('input', desenhar);
+
+// ----- item novo -----
+let estrutura = {};
+async function carregarEstrutura() {
+  try { estrutura = (await api('GET', '/api/estrutura')).secoes; } catch { return; }
+  const sel = $('novo-secao'); sel.replaceChildren();
+  for (const [id, v] of Object.entries(estrutura)) sel.append(new Option(v.titulo, id));
+  trocarSecaoNova();
+}
+function trocarSecaoNova() {
+  const v = estrutura[$('novo-secao').value]; const sl = $('novo-lista'); sl.replaceChildren();
+  if (!v) return;
+  for (const l of v.listas) sl.append(new Option(l.titulo, String(l.lista)));
+  trocarListaNova();
+}
+function trocarListaNova() {
+  const v = estrutura[$('novo-secao').value]; const l = v && v.listas.find((x) => String(x.lista) === $('novo-lista').value);
+  const chips = !!l && l.tipo === 'chips';
+  $('novo-preco-w').hidden = chips; $('novo-desc-w').hidden = chips; $('novo-foto-w').hidden = chips; $('novo-preco').required = !chips;
+}
+$('novo-secao').addEventListener('change', trocarSecaoNova);
+$('novo-lista').addEventListener('change', trocarListaNova);
+$('form-novo').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const m = $('msg-novo'); m.className = 'msg'; m.textContent = '';
+  try {
+    const foto = $('novo-foto').files[0];
+    const criado = await api('POST', '/api/novos', { secao: $('novo-secao').value, lista: Number($('novo-lista').value), nome: $('novo-nome').value, preco: $('novo-preco').value, descricao: $('novo-desc').value });
+    $('novo-nome').value = ''; $('novo-preco').value = ''; $('novo-desc').value = '';
+    let extra = '';
+    if (foto && !$('novo-foto-w').hidden) {
+      try {
+        const lista = (await api('GET', '/api/itens')).itens;
+        const novo = lista.find((x) => x.novo === criado.uid);
+        if (!novo) throw new Error('não achei o item recém-criado');
+        await enviarFotoItem(novo.id, foto);
+      } catch (e2) { extra = ' Mas a foto não foi: ' + e2.message + ' Dá pra enviar de novo na lista abaixo.'; }
+    }
+    $('novo-foto').value = '';
+    m.className = extra ? 'msg erro' : 'msg ok'; m.textContent = 'Item adicionado. Ele aparece no fim da lista escolhida.' + extra;
+    carregou.textos = false; carregou.aparencia = false; await carregarItens();
+  } catch (err) { m.className = 'msg erro'; m.textContent = err.message; }
+});
+
+// ----- textos -----
+let textos = [];
+async function carregarTextos() {
+  try { textos = (await api('GET', '/api/textos')).textos; desenharTextos(); } catch (e) { $('lista-textos').textContent = e.message; }
+}
+function desenharTextos() {
+  const q = $('filtro-textos').value.trim().toLowerCase();
+  const box = $('lista-textos'); box.replaceChildren();
+  let ultima = null;
+  for (const t of textos) {
+    const atual = t.novo ?? t.texto;
+    if (q && !atual.toLowerCase().includes(q) && !t.titulo.toLowerCase().includes(q)) continue;
+    if (t.secao !== ultima) { const h = document.createElement('h2'); h.textContent = t.titulo; box.append(h); ultima = t.secao; }
+    box.append(linhaTexto(t));
+  }
+  if (!box.children.length) box.textContent = 'Nenhum texto encontrado.';
+}
+function linhaTexto(t) {
+  const d = document.createElement('div'); d.className = 'linha-texto';
+  const longo = (t.novo ?? t.texto).length > 70;
+  const campo = document.createElement(longo ? 'textarea' : 'input');
+  if (longo) campo.rows = 3; else campo.type = 'text';
+  campo.value = t.novo ?? t.texto; campo.maxLength = 300; campo.setAttribute('aria-label', 'Texto');
+  const ac = document.createElement('div'); ac.className = 'acoes';
+  const salvar = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Salvar', className: 'principal' });
+  const rest = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Restaurar' }); rest.hidden = t.novo === undefined;
+  const est = document.createElement('span'); est.className = 'estado'; est.textContent = t.novo !== undefined ? 'Original: ' + t.texto : '';
+  ac.append(salvar, rest, est); d.append(campo, ac);
+  const aviso = (x, c) => { est.className = 'estado ' + (c || ''); est.textContent = x; };
+  salvar.addEventListener('click', async () => {
+    salvar.disabled = true;
+    try {
+      const r = await api('PUT', '/api/textos/' + encodeURIComponent(t.id), { texto: campo.value });
+      if (r.novo === null) delete t.novo; else t.novo = r.novo;
+      campo.value = t.novo ?? t.texto; rest.hidden = t.novo === undefined;
+      aviso(t.novo === undefined ? 'Salvo (igual ao original).' : 'Salvo. Original: ' + t.texto, 'ok');
+    } catch (e) { aviso(e.message, 'erro'); }
+    salvar.disabled = false;
+  });
+  rest.addEventListener('click', async () => {
+    try { await api('DELETE', '/api/textos/' + encodeURIComponent(t.id)); delete t.novo; campo.value = t.texto; rest.hidden = true; aviso('Voltou ao original.', 'ok'); }
+    catch (e) { aviso(e.message, 'erro'); }
+  });
+  return d;
+}
+$('filtro-textos').addEventListener('input', desenharTextos);
+
+// ----- eventos -----
+let ev = null, evPadrao = null;
+const DIAS = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+const ROTULO_SEMANAL = (d) => 'Toda ' + DIAS[d] + ' (as próximas datas aparecem sozinhas)';
+const TEXTO_SEMANAL = (d) => (d === 0 || d === 6 ? 'Todo ' : 'Toda ') + DIAS[d];
+const recarregarPreviaEv = () => { $('previa-ev').src = '/?p=' + Date.now() + '#eventos'; };
+async function carregarEventos() {
+  try { const r = await api('GET', '/api/eventos'); ev = JSON.parse(JSON.stringify(r.eventos)); evPadrao = r.padrao; }
+  catch (e) { $('msg-ev').className = 'msg erro'; $('msg-ev').textContent = e.message; return; }
+  desenharEventos(); recarregarPreviaEv();
+}
+function desenharEventos() {
+  $('ev-intro').value = ev.intro; $('ev-botao-texto').value = ev.botaoTexto; $('ev-botao-link').value = ev.botaoLink; $('ev-aviso').value = ev.aviso;
+  const box = $('ev-cards'); box.replaceChildren();
+  ev.cards.forEach((c, i) => box.append(cartaoEvento(c, i)));
+  if (!ev.cards.length) { const p = document.createElement('p'); p.className = 'dica'; p.textContent = 'Nenhum evento. Toque em "+ Adicionar evento".'; box.append(p); }
+}
+function cartaoEvento(c, i) {
+  const d = document.createElement('div'); d.className = 'card';
+  const topo = document.createElement('div'); topo.className = 'form-grid';
+  const lDia = document.createElement('label'); lDia.append('Nome do evento');
+  const iDia = Object.assign(document.createElement('input'), { type: 'text', value: c.dia, maxLength: 40, placeholder: 'Ex.: Sexta, Sábado, Show de forró' }); lDia.append(iDia);
+  iDia.addEventListener('input', () => { c.dia = iDia.value; });
+  const lCor = document.createElement('label'); lCor.append('Cor do cartão');
+  const sCor = document.createElement('select'); sCor.append(new Option('Dourado', 'ouro'), new Option('Vermelho', 'pimenta')); sCor.value = c.cor; lCor.append(sCor);
+  sCor.addEventListener('change', () => { c.cor = sCor.value; });
+  const lRep = document.createElement('label'); lRep.className = 'larga'; lRep.append('Quando acontece');
+  const sRep = document.createElement('select'); sRep.append(new Option('Datas específicas (eu escrevo)', ''));
+  for (let k = 0; k < 7; k++) sRep.append(new Option(ROTULO_SEMANAL(k), String(k)));
+  sRep.value = Number.isInteger(c.diaSemana) ? String(c.diaSemana) : ''; lRep.append(sRep);
+  const lDatas = document.createElement('label'); lDatas.className = 'larga'; lDatas.append('Datas (separe por vírgula)');
+  const iDatas = Object.assign(document.createElement('input'), { type: 'text', value: c.datas.join(', '), maxLength: 200, placeholder: 'Ex.: 15/11, 22/11' }); lDatas.append(iDatas);
+  iDatas.addEventListener('input', () => { c.datas = iDatas.value.split(',').map((x) => x.trim()).filter(Boolean); });
+  const ajustaRep = () => {
+    lDatas.hidden = sRep.value !== '';
+    if (sRep.value === '') { c.diaSemana = null; if (c.datas.length === 1 && /^Tod[oa] /.test(c.datas[0])) c.datas = []; iDatas.value = c.datas.join(', '); }
+    else { c.diaSemana = Number(sRep.value); c.datas = [TEXTO_SEMANAL(c.diaSemana)]; }
+  };
+  sRep.addEventListener('change', ajustaRep); lDatas.hidden = sRep.value !== '';
+  topo.append(lDia, lCor, lRep, lDatas);
+  d.append(topo);
+
+  const h = document.createElement('h3'); h.textContent = 'Informações do evento'; h.style.margin = '14px 0 8px'; d.append(h);
+  const lista = document.createElement('div');
+  const desenhaCampos = () => {
+    lista.replaceChildren();
+    c.campos.forEach((f, k) => {
+      const l = document.createElement('div'); l.style.cssText = 'display:grid;grid-template-columns:150px 1fr auto;gap:6px;margin-bottom:6px';
+      const a = Object.assign(document.createElement('input'), { type: 'text', value: f.rotulo, maxLength: 40, placeholder: 'Título (ex.: Horário)' }); a.setAttribute('aria-label', 'Título do campo');
+      const b = Object.assign(document.createElement('input'), { type: 'text', value: f.valor, maxLength: 300, placeholder: 'Informação (ex.: 22h)' }); b.setAttribute('aria-label', 'Informação');
+      const x = Object.assign(document.createElement('button'), { type: 'button', textContent: '×', title: 'Remover este campo' }); x.setAttribute('aria-label', 'Remover este campo');
+      a.addEventListener('input', () => { f.rotulo = a.value; }); b.addEventListener('input', () => { f.valor = b.value; });
+      x.addEventListener('click', () => { c.campos.splice(k, 1); desenhaCampos(); });
+      l.append(a, b, x); lista.append(l);
+    });
+  };
+  desenhaCampos(); d.append(lista);
+  const add = Object.assign(document.createElement('button'), { type: 'button', textContent: '+ Adicionar informação' });
+  add.addEventListener('click', () => { if (c.campos.length >= 10) return; c.campos.push({ rotulo: '', valor: '' }); desenhaCampos(); });
+
+  const rod = document.createElement('div'); rod.className = 'rodape-acoes';
+  const lOc = document.createElement('label'); lOc.style.cssText = 'display:flex;gap:6px;align-items:center;font-size:14px;color:var(--suave)'; const ck = Object.assign(document.createElement('input'), { type: 'checkbox', checked: !!c.oculto }); lOc.append(ck, 'Esconder este evento');
+  ck.addEventListener('change', () => { c.oculto = ck.checked; });
+  const sobe = Object.assign(document.createElement('button'), { type: 'button', textContent: '↑ Subir' }); sobe.disabled = i === 0;
+  const desce = Object.assign(document.createElement('button'), { type: 'button', textContent: '↓ Descer' }); desce.disabled = i === ev.cards.length - 1;
+  const rem = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Remover evento' });
+  sobe.addEventListener('click', () => { [ev.cards[i - 1], ev.cards[i]] = [ev.cards[i], ev.cards[i - 1]]; desenharEventos(); });
+  desce.addEventListener('click', () => { [ev.cards[i + 1], ev.cards[i]] = [ev.cards[i], ev.cards[i + 1]]; desenharEventos(); });
+  rem.addEventListener('click', () => { if (confirm('Remover o evento "' + (c.dia || 'sem nome') + '"? Ele só some do cardápio depois que você tocar em "Salvar eventos".')) { ev.cards.splice(i, 1); desenharEventos(); } });
+  rod.append(add, lOc, sobe, desce, rem); d.append(rod);
+  return d;
+}
+$('ev-add').addEventListener('click', () => {
+  if (ev.cards.length >= 8) { $('msg-ev').className = 'msg erro'; $('msg-ev').textContent = 'Use no máximo 8 eventos.'; return; }
+  ev.cards.push({ cor: 'ouro', diaSemana: null, dia: '', datas: [], campos: [{ rotulo: 'Atração', valor: '' }, { rotulo: 'Horário', valor: '' }, { rotulo: 'Local', valor: '' }, { rotulo: 'Entrada', valor: '' }], oculto: false });
+  desenharEventos();
+});
+$('ev-salvar').addEventListener('click', async () => {
+  const m = $('msg-ev'); m.className = 'msg'; m.textContent = '';
+  ev.intro = $('ev-intro').value; ev.botaoTexto = $('ev-botao-texto').value; ev.botaoLink = $('ev-botao-link').value; ev.aviso = $('ev-aviso').value;
+  try { await api('PUT', '/api/eventos', { eventos: ev }); m.className = 'msg ok'; m.textContent = 'Eventos salvos. Já estão no cardápio.'; recarregarPreviaEv(); }
+  catch (e) { m.className = 'msg erro'; m.textContent = e.message; }
+});
+$('ev-padrao').addEventListener('click', async () => {
+  const m = $('msg-ev'); m.className = 'msg'; m.textContent = '';
+  if (!confirm('Voltar a seção Eventos ao que era antes das suas mudanças?')) return;
+  try { await api('DELETE', '/api/eventos'); await carregarEventos(); m.className = 'msg ok'; m.textContent = 'Voltou ao original.'; }
+  catch (e) { m.className = 'msg erro'; m.textContent = e.message; }
+});
+
+// ----- wi-fi -----
+function atualizaEstadoWifi() {
+  const e = $('wifi-estado');
+  if ($('wifi-ativo').checked) { e.className = 'msg ok'; e.textContent = 'Ligado: o cliente vê o Wi-Fi no cardápio depois que você salvar.'; }
+  else { e.className = 'msg erro'; e.textContent = 'DESLIGADO: o cliente NÃO vê o Wi-Fi no cardápio. Marque a caixinha acima e salve.'; }
+}
+$('wifi-ativo').addEventListener('change', atualizaEstadoWifi);
+const recarregarPreviaWifi = () => { $('previa-wifi').src = '/?p=' + Date.now() + '#wifi'; };
+async function carregarWifi() {
+  try {
+    const w = (await api('GET', '/api/wifi')).wifi;
+    const nuncaConfigurado = !w.ativo && !w.rede && !w.senha;
+    $('wifi-ativo').checked = nuncaConfigurado ? true : !!w.ativo;   // primeira vez: já vem marcado, pra não salvar "escondido" sem querer
+    $('wifi-rede').value = w.rede; $('wifi-senha').value = w.senha; $('wifi-msg').value = w.mensagem;
+    atualizaEstadoWifi();
+  } catch (e) { $('msg-wifi').className = 'msg erro'; $('msg-wifi').textContent = e.message; return; }
+  recarregarPreviaWifi();
+}
+$('wifi-salvar').addEventListener('click', async () => {
+  const m = $('msg-wifi'); m.className = 'msg'; m.textContent = '';
+  try {
+    await api('PUT', '/api/wifi', { wifi: { ativo: $('wifi-ativo').checked, rede: $('wifi-rede').value, senha: $('wifi-senha').value, mensagem: $('wifi-msg').value } });
+    if ($('wifi-ativo').checked) { m.className = 'msg ok'; m.textContent = 'Wi-Fi salvo. Já aparece no cardápio (veja a prévia abaixo).'; }
+    else { m.className = 'msg erro'; m.textContent = 'ATENÇÃO: salvei, mas o Wi-Fi está DESLIGADO e NÃO aparece no cardápio. Marque "Mostrar o Wi-Fi no cardápio" e salve de novo.'; }
+    recarregarPreviaWifi();
+  } catch (e) { m.className = 'msg erro'; m.textContent = e.message; }
+});
+$('wifi-padrao').addEventListener('click', async () => {
+  const m = $('msg-wifi'); m.className = 'msg'; m.textContent = '';
+  if (!confirm('Tirar o Wi-Fi do cardápio e apagar a senha guardada aqui?')) return;
+  try { await api('DELETE', '/api/wifi'); await carregarWifi(); m.className = 'msg ok'; m.textContent = 'Wi-Fi retirado do cardápio.'; }
+  catch (e) { m.className = 'msg erro'; m.textContent = e.message; }
+});
+
+// ----- aparência -----
+let ap = null;
+const recarregarPrevia = () => { $('previa').src = '/?p=' + Date.now(); };
+async function carregarAparencia() {
+  try { ap = await api('GET', '/api/aparencia'); } catch (e) { $('msg-ap').className = 'msg erro'; $('msg-ap').textContent = e.message; return; }
+  desenharAparencia(); recarregarPrevia();
+}
+function desenharAparencia() {
+  const cores = $('ap-cores'); cores.replaceChildren();
+  for (const [k, rotulo] of Object.entries(ap.cores)) {
+    const l = document.createElement('label'); l.className = 'cor';
+    const i = Object.assign(document.createElement('input'), { type: 'color', value: ap.tema.cores[k] }); i.dataset.cor = k;
+    l.append(i, rotulo); cores.append(l);
+  }
+  const ft = $('ap-fonte-titulo'), fx = $('ap-fonte-texto'); ft.replaceChildren(); fx.replaceChildren();
+  for (const f of ap.fontesTitulo) ft.append(new Option(f === 'Fraunces' ? 'Fraunces (atual)' : f, f));
+  for (const f of ap.fontesTexto) fx.append(new Option(f === 'Manrope' ? 'Manrope (atual)' : f, f));
+  ft.value = ap.tema.fonteTitulos; fx.value = ap.tema.fonteTexto;
+  $('ap-tamanho').value = ap.tema.tamanho; $('ap-tamanho-v').textContent = ap.tema.tamanho + '%';
+  const sc = $('ap-secoes'); sc.replaceChildren();
+  for (const s of ap.secoes) {
+    const l = document.createElement('label'); const c = Object.assign(document.createElement('input'), { type: 'checkbox', checked: !s.oculta }); c.dataset.secao = s.id;
+    l.append(c, s.titulo); sc.append(l);
+  }
+  const fotos = $('ap-fotos'); fotos.replaceChildren();
+  for (const im of ap.imagens) fotos.append(cartaoFoto(im));
+}
+function cartaoFoto(im) {
+  const d = document.createElement('div'); d.className = 'foto';
+  const img = Object.assign(document.createElement('img'), { src: im.atual + '?v=' + Date.now(), alt: im.alt || im.src });
+  const nome = document.createElement('div'); nome.textContent = im.alt ? im.alt.slice(0, 60) : im.src;
+  const ac = document.createElement('div'); ac.className = 'acoes';
+  const lab = document.createElement('label'); lab.className = 'botao'; lab.textContent = 'Trocar foto';
+  const arq = Object.assign(document.createElement('input'), { type: 'file', accept: 'image/jpeg,image/png,image/webp' }); arq.hidden = true; lab.append(arq);
+  const rest = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Restaurar' }); rest.hidden = !im.trocada;
+  const est = document.createElement('div'); est.style.minHeight = '1.2em';
+  ac.append(lab, rest); d.append(img, nome, ac, est);
+  arq.addEventListener('change', async () => {
+    const f = arq.files[0]; if (!f) return;
+    if (f.size > 5 * 1024 * 1024) { est.textContent = 'A foto passa de 5 MB.'; return; }
+    est.textContent = 'Enviando…';
+    try {
+      const r = await fetch('/api/imagem?src=' + encodeURIComponent(im.src), { method: 'POST', headers: { 'X-Painel': '1' }, body: f, credentials: 'same-origin' });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.erro || 'Não consegui enviar a foto.');
+      im.atual = j.atual; im.trocada = true; img.src = j.atual + '?v=' + Date.now(); rest.hidden = false; est.textContent = 'Foto trocada.'; recarregarPrevia();
+    } catch (e) { est.textContent = e.message; }
+    arq.value = '';
+  });
+  rest.addEventListener('click', async () => {
+    try { await api('DELETE', '/api/imagem?src=' + encodeURIComponent(im.src)); im.atual = '/' + im.src; im.trocada = false; img.src = im.atual + '?v=' + Date.now(); rest.hidden = true; est.textContent = 'Voltou à foto original.'; recarregarPrevia(); }
+    catch (e) { est.textContent = e.message; }
+  });
+  return d;
+}
+$('ap-tamanho').addEventListener('input', () => { $('ap-tamanho-v').textContent = $('ap-tamanho').value + '%'; });
+$('ap-salvar').addEventListener('click', async () => {
+  const m = $('msg-ap'); m.className = 'msg'; m.textContent = '';
+  const cores = {}; for (const i of document.querySelectorAll('#ap-cores input')) cores[i.dataset.cor] = i.value;
+  const secoes = {}; for (const c of document.querySelectorAll('#ap-secoes input')) if (!c.checked) secoes[c.dataset.secao] = true;
+  try {
+    await api('PUT', '/api/aparencia', { tema: { cores, fonteTitulos: $('ap-fonte-titulo').value, fonteTexto: $('ap-fonte-texto').value, tamanho: Number($('ap-tamanho').value) }, secoes });
+    m.className = 'msg ok'; m.textContent = 'Aparência salva.'; recarregarPrevia();
+  } catch (e) { m.className = 'msg erro'; m.textContent = e.message; }
+});
+$('ap-padrao').addEventListener('click', async () => {
+  const m = $('msg-ap'); m.className = 'msg'; m.textContent = '';
+  try { await api('PUT', '/api/aparencia', { tema: null }); await carregarAparencia(); m.className = 'msg ok'; m.textContent = 'Cores e letras voltaram ao padrão.'; }
+  catch (e) { m.className = 'msg erro'; m.textContent = e.message; }
+});
+$('previa-desktop').addEventListener('click', () => $('previa').classList.remove('celular'));
+$('previa-celular').addEventListener('click', () => $('previa').classList.add('celular'));
+$('previa-recarregar').addEventListener('click', recarregarPrevia);
+
+$('form-senha').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const m = $('msg-senha'); m.className = 'msg'; m.textContent = '';
+  try { await api('POST', '/api/senha', { atual: $('senha-atual').value, nova: $('senha-nova').value }); $('senha-atual').value = $('senha-nova').value = ''; m.className = 'msg ok'; m.textContent = 'Senha trocada.'; }
+  catch (err) { m.className = 'msg erro'; m.textContent = err.message; }
+});
+
+// ---------- assistente ----------
+const chat = $('chat'), cmd = $('cmd'), mic = $('mic');
+let pendente = null;   // plano esperando confirmação: { acoes: [...] }
+const EXEMPLOS = ['Esconde a ostra', 'Aumenta as cervejas em 10%', 'Quanto custa o gin?', 'Desfaz'];
+for (const e of EXEMPLOS) { const b = Object.assign(document.createElement('button'), { type: 'button', textContent: e }); b.addEventListener('click', () => { cmd.value = e; cmd.focus(); }); $('chips').append(b); }
+
+const limparBotoes = () => chat.querySelectorAll(".bts").forEach((x) => x.remove());
+function bolha(tipo, texto, extra) {
+  const d = document.createElement('div'); d.className = 'bolha ' + tipo; d.textContent = texto;
+  if (extra) extra(d);
+  chat.append(d); chat.scrollTop = chat.scrollHeight; return d;
+}
+function falarEmVoz(t) {
+  if (!$('falar').checked || !('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(t.replace(/[•\n]+/g, '. ')); u.lang = 'pt-BR'; speechSynthesis.speak(u);
+}
+function botoes(d, lista) {
+  const w = document.createElement('div'); w.className = 'bts';
+  for (const [rotulo, fn, principal] of lista) { const b = Object.assign(document.createElement('button'), { type: 'button', textContent: rotulo, className: principal ? 'principal' : '' }); b.addEventListener('click', fn); w.append(b); }
+  d.append(w);
+}
+function previa(acoes, avisos) {
+  limparBotoes();
+  pendente = { acoes };
+  const n = acoes.length;
+  const titulo = acoes[0].tipo === 'desfazer' ? 'Vou desfazer a última alteração:' : (n === 1 ? 'Entendi assim:' : 'Entendi assim, ' + n + ' itens:');
+  const d = bolha('bot', titulo, (el) => {
+    const ul = document.createElement('ul');
+    for (const a of acoes.slice(0, 12)) { const li = document.createElement('li'); li.textContent = a.rotulo; ul.append(li); }
+    if (n > 12) { const li = document.createElement('li'); li.textContent = '… e mais ' + (n - 12) + '.'; ul.append(li); }
+    el.append(ul);
+    for (const a of avisos || []) { const p = document.createElement('div'); p.className = 'av'; p.textContent = a; el.append(p); }
+  });
+  botoes(d, [['Confirmar', confirmar, true], ['Cancelar', cancelar]]);
+  falarEmVoz(n === 1 ? acoes[0].rotulo + '. Confirma?' : n + ' alterações. Confirma?');
+}
+function cancelar() { if (!pendente) return; limparBotoes(); pendente = null; bolha('bot', 'Cancelado. Nada foi mudado.'); }
+async function confirmar() {
+  if (!pendente) return;
+  limparBotoes();
+  const acoes = pendente.acoes; pendente = null;
+  try {
+    const r = await api('POST', '/api/assistente/aplicar', { acoes });
+    const msg = r.desfeito ? 'Desfeito.' : 'Feito: ' + r.feitas + (r.feitas === 1 ? ' alteração' : ' alterações') + ' no cardápio.' + (r.erros.length ? ' Não deu pra aplicar: ' + r.erros.join(' ') : '');
+    bolha('bot ' + (r.erros.length ? 'ruim' : 'ok'), msg); falarEmVoz(msg);
+    carregar();
+  } catch (e) { bolha('bot ruim', e.message); }
+}
+const SIM = /^(sim|confirma|confirmo|confirmar|pode|pode ser|isso|isso mesmo|manda ver|ok|okay|aplica|aplicar|faz|pode fazer|beleza)$/;
+const NAO = /^(nao|cancela|cancelar|deixa|esquece|deixa pra la|para)$/;
+const limpo = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z\s]/g, '').trim();
+
+async function enviar(texto) {
+  texto = texto.trim(); if (!texto) return;
+  limparBotoes();
+  bolha('eu', texto);
+  const l = limpo(texto);
+  if (pendente && SIM.test(l)) return confirmar();
+  if (pendente && NAO.test(l)) return cancelar();
+  pendente = null;
+  try {
+    const r = await api('POST', '/api/assistente', { texto });
+    if (r.tipo === 'resposta') { bolha('bot', r.texto); falarEmVoz(r.texto); }
+    else if (r.tipo === 'acoes') previa(r.acoes, r.avisos);
+    else if (r.tipo === 'escolha') {
+      const d = bolha('bot', r.pergunta);
+      botoes(d, r.opcoes.map((o) => [o.rotulo, () => previa(o.acoes, [])]));
+      falarEmVoz(r.pergunta);
+    }
+  } catch (e) { bolha('bot ruim', e.message); }
+}
+$('form-assist').addEventListener('submit', (e) => { e.preventDefault(); const t = cmd.value; cmd.value = ''; enviar(t); });
+
+// voz: reconhecimento do próprio navegador (Chrome/Edge), em português
+const Reconhecedor = window.SpeechRecognition || window.webkitSpeechRecognition;
+let ouvindo = null;
+if (!Reconhecedor) { mic.disabled = true; mic.title = 'Este navegador não tem reconhecimento de voz. Use o Chrome ou o Edge.'; }
+mic.addEventListener('click', () => {
+  if (ouvindo) { ouvindo.stop(); return; }
+  const rec = new Reconhecedor(); rec.lang = 'pt-BR'; rec.interimResults = true; rec.maxAlternatives = 1;
+  let final = '';
+  rec.onstart = () => { ouvindo = rec; mic.setAttribute('aria-pressed', 'true'); cmd.placeholder = 'Ouvindo… fale o comando'; $('falar').checked = true; };
+  rec.onresult = (ev) => {
+    let parcial = '';
+    for (const r of ev.results) { if (r.isFinal) final += r[0].transcript; else parcial += r[0].transcript; }
+    cmd.value = (final + parcial).trim();
+  };
+  rec.onerror = (ev) => {
+    const m = { 'not-allowed': 'O navegador bloqueou o microfone. Libere o acesso no cadeado ao lado do endereço.', 'service-not-allowed': 'O navegador bloqueou o microfone.', 'no-speech': 'Não ouvi nada. Toque no microfone e fale de novo.', 'audio-capture': 'Não achei um microfone neste computador.', 'network': 'O reconhecimento de voz precisa de internet.' }[ev.error];
+    if (ev.error !== 'aborted') bolha('bot ruim', m || 'A voz falhou (' + ev.error + '). Pode digitar o comando.');
+  };
+  rec.onend = () => {
+    ouvindo = null; mic.setAttribute('aria-pressed', 'false'); cmd.placeholder = 'Ex.: muda a sopa de carne para 20 reais';
+    const t = (final || cmd.value).trim(); cmd.value = ''; if (t) enviar(t);
+  };
+  try { rec.start(); } catch { /* já estava ouvindo */ }
+});
+
+fetch('/api/sessao', { credentials: 'same-origin' }).then((r) => r.json()).then((d) => mostrar(!!d.logado)).catch(() => mostrar(false));
+</script>
+</body>
+</html>
